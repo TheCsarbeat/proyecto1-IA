@@ -19,3 +19,8 @@ assignees: ''
 - **Documentation:**
     - Document findings in the shared Jupyter notebook (code, visualizations, explanations).
     - Ensure consistent formatting and code comments.
+
+## Additional Notes
+
+
+<!-- Add any other important details, considerations, or questions. -->
