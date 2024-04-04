@@ -20,4 +20,4 @@ def ipynb_to_txt(ipynb_path, txt_path):
                 f.write(''.join(cell['source']) + '\n\n')
 
 # Usar la función con la ruta de tu archivo .ipynb y el destino del .txt
-ipynb_to_txt('knn.ipynb', 'asdf.txt')
+ipynb_to_txt('diabetesDataSet.ipynb', 'asdf.txt')
