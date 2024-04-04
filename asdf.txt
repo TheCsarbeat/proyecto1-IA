@@ -1,0 +1,678 @@
+# Texto:
+# Proyecto 1 | Inteligencia Artificial
+## Integrantes:
+- **César Jiménez Salazar** - 2021052709
+- **Maynor Martínez Hernández** - 2021052792
+- **Fernanda Murillo Mena** - 2021077803
+
+## Descripción
+Este proyecto tiene como objetivo principal aplicar diversas técnicas de clasificación de datos aplicados para dos conjuntos de datos, esto permite explorar diversas herramientas relacionadas al Machine Learning, y contribuir al desarrollo del conocimiento a partir de la investigación. Se utilizarán los modelos KNN, regresión lineal y redes neuronales con el fin de analizar ambos conjuntos de datos.
+
+## Conjunto de datos
+1. **Pima Indians Diabetes Database**
+    - **URL:** https://www.kaggle.com/datasets/uciml/pima-indians-diabetes-database
+    - **Descripción:** Este conjunto de datos proviene del Instituto Nacional de Diabetes y Enfermedades Digestivas y Renales. El objetivo del conjunto de datos es predecir de forma diagnóstica si un paciente tiene diabetes o no, basándose en ciertas mediciones de diagnóstico incluidas en el conjunto de datos. Se impusieron varias restricciones a la selección de estas instancias de una base de datos más grande. En particular, todos los pacientes aquí son mujeres de al menos 21 años de edad de ascendencia india Pima.
+2. **Heart Failure Prediction Dataset** <br>
+   Este fue el dataset elegido por el equipo de trabajo debido a que fue el dataset relacionado a salud con una cantidad de features adecuada y el más parecido al primer dataset dado por el profesor en cuanto al tamaño de samples. 
+    - **URL:** https://www.kaggle.com/datasets/fedesoriano/heart-failure-prediction
+    - **Descripción:** Las enfermedades cardiovasculares (ECV) son la principal causa de muerte a nivel mundial y se estima que cobran 17,9 millones de vidas cada año, lo que representa el 31% de todas las muertes en todo el mundo. Cuatro de cada cinco muertes por ECV se deben a ataques cardíacos y accidentes cerebrovasculares, y un tercio de estas muertes ocurren prematuramente en mujeres menores de 70 años. La insuficiencia cardíaca es un evento común causado por enfermedades cardiovasculares y este conjunto de datos contiene 11 características que pueden usarse para predecir una posible enfermedad cardíaca. Las mujeres con enfermedades cardiovasculares o que tienen un alto riesgo cardiovascular (debido a la presencia de uno o más factores de riesgo como hipertensión, diabetes, hiperlipidemia o enfermedades ya establecidas) necesitan una detección y un tratamiento precoz en el que un modelo de aprendizaje automático puede ser de gran ayuda.
+
+# Texto:
+## Pima Indians Diabetes Database
+Inicialmente, se procede con la exploración y el preprocesamiento de datos para el conjunto de datos *Pima Indians Diabetes Database*. Dicho dataset fue dado por el profesor del curso.
+
+### Analisis Exploratorio de Datos
+Primero, se importan las librerías necesarias para el análisis exploratorio de datos.
+
+# Código:
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Texto:
+Ahora, se procede a cargar los datos del dataset. Del mismo modo, se comienza a explorar el conjunto de datos para obtener la información básica importante. Para lograr esto, se visualizan algunos datos para poder ver las columnas y los datos correspondientes, se obtienen las estadísticas básicas, la cantidad de datos faltantes y la correlación entre columnas.
+
+# Código:
+# Load dataset
+df_diabetes = pd.read_csv('diabetes.csv')
+
+# Display 20 rows 
+print(df_diabetes.head(20))
+
+# Código:
+# Get basic statistics 
+print(df_diabetes.describe())
+
+# Código:
+# Number of missing values in each column
+print(df_diabetes.isnull().sum())
+
+# Código:
+# Correlation between columns
+print(df_diabetes.corr())
+
+# Código:
+df_diabetes.count()
+
+# Texto:
+Con esta información, se obtiene que el dataset posee 9 columnas de las cuales *pregnancies* tiene la posibilidad de tener un 0 sin que sea un problema para el análisis, esto porque una mujer puede tener 0 embarazos. Además, la columna *outcome* tiene un valor binario por lo que también puede tener un valor 0. Se evidencia que el dataset tiene una cantidad de 768 datos y que no hay datos nulos o faltantes.
+
+Ahora, se procede a revisar si hay filas duplicadas para eliminarlas. Del mismo modo, tras el análisis anterior se pudo notar que algunas columnas (además de las permitidas) poseen valores en 0 por lo que es de suma importancia corregirlo para el análisis del dataset con los modelos más adelante. 
+
+Una técnica utilizada para tratar con valores faltantes en un conjunto de datos es la **_imputación de datos_**. El objetivo de la imputación es reemplazar los datos faltantes con valores sustitutos para permitir el análisis sin descartar *features* por la falta de algunos valores. Usar la media como valor de imputación es apropiado porque representa el punto central de la distribución y minimiza la distorsión.
+
+Por este motivo, se decidió recurrir a la *imputación de datos por la media*, es decir, reemplazar los valores en 0 encontrados en todas las columnas excepto *pregnancies* y *outcome* por la media correspondiente a la columna.
+
+# Código:
+# Check for duplicate rows and remove them
+print(df_diabetes.duplicated().sum())
+df_diabetes = df_diabetes.drop_duplicates()
+
+# Código:
+# Check for missing values for 0 in columns except for the 'Pregnancies' column and 'Outcome' column and replace them with the mean of the respective column
+df_diabetes['Glucose'] = df_diabetes['Glucose'].replace(0, np.nan)
+df_diabetes['BloodPressure'] = df_diabetes['BloodPressure'].replace(0, np.nan)
+df_diabetes['SkinThickness'] = df_diabetes['SkinThickness'].replace(0, np.nan)
+df_diabetes['Insulin'] = df_diabetes['Insulin'].replace(0, np.nan)
+df_diabetes['BMI'] = df_diabetes['BMI'].replace(0, np.nan)
+df_diabetes['DiabetesPedigreeFunction'] = df_diabetes['DiabetesPedigreeFunction'].replace(0, np.nan)
+df_diabetes['Age'] = df_diabetes['Age'].replace(0, np.nan)
+df_diabetes.fillna(df_diabetes.mean(), inplace=True)
+
+# Texto:
+Debido a que no habían filas duplicadas, no se eliminó nada. Tras el cambio del dataset realizado con la imputación por la media, se puede proceder a analizar mediante el uso de diversos diagramas para ver el comportamiento del dataset de manera visual.
+
+El siguiente histograma permitirá ver el rango de edades que se encuentran dentro del conjunto de datos, esto con el fin de obtener una idea general de los datos obtenidos.
+
+# Código:
+# Histogram of the Age column
+plt.hist(df_diabetes['Age'], bins=10, color='#3CB371', edgecolor='black')
+plt.title('Histogram of Age')
+plt.xlabel('Age')
+plt.ylabel('Frequency')
+plt.show()
+
+# Texto:
+Con la información obtenida se evidencia que la mayoría de mujeres se encuentra en un rango de edad entre 20 y 30 años. Ahora, se procede con un análisis un poco más profundo. Se desea observar el porcentaje y la cantidad de mujeres diabéticas en comparación con las mujeres que no lo padecen.
+
+# Código:
+# Distribution of the Outcome column for people with diabetes and people without diabetes
+palette_colors = {0: "#40E0D0", 1: "#006064"}  
+sns.countplot(x='Outcome', data=df_diabetes, hue="Outcome", palette=palette_colors)
+plt.title('Distribution of Outcome')
+plt.xlabel('Outcome')
+plt.ylabel('Frequency')
+plt.xticks([0, 1], ['Non-Diabetic', 'Diabetic'])
+plt.show()
+
+# Pie chart to visualize the proportion of diabetic and non-diabetic individuals
+labels = ['Non-Diabetic', 'Diabetic']
+sizes = df_diabetes['Outcome'].value_counts()
+colors = ['#40E0D0', '#006064']
+plt.pie(sizes, labels=labels, colors=colors, autopct='%1.1f%%', startangle=90)
+plt.title('Proportion of Diabetic and Non-Diabetic Individuals')
+plt.axis('equal')
+plt.show()
+
+# Texto:
+Con base en los resultados obtenidos, se puede ver que existe una mayor cantidad de mujeres que no padecen de diabetes en el conjunto de datos con un 65.1% de los 768 datos existentes. A demás, es importante ver que en el *pie chart* el dataset no está balanceado.
+
+Ahora, para obtener una idea de como están relacionados los *features* con el hecho de que una mujer sea diabética o no, se pretende comparar cada columna con la columna de *outcome*. Para agilizar este proceso, primero se creó una función que recibe el dataset, el arreglo de *features* con la cual se pretende comparar y la columna con la que se va a comparar.
+
+# Código:
+def plot_stacked_grid_histogram(df, features, split_column):
+    num_features = len(features)
+    colors = ['#40E0D0', '#006064']
+    
+    num_rows = (num_features + 2) // 3  
+    
+    fig, axes = plt.subplots(num_rows, 3, figsize=(15, 5 * num_rows)) 
+
+    if num_rows > 1:
+        axes = axes.flatten()
+    
+    for i, feature in enumerate(features):
+        ax = axes[i] if num_rows > 1 else axes
+        if feature in df.columns and split_column in df.columns:
+            ax.hist([df[df[split_column] == 0][feature], df[df[split_column] == 1][feature]], 
+                    bins=10, stacked=True, color=colors, 
+                    label=[f'Not {split_column}', f'{split_column}'], edgecolor='black')
+            ax.set_title(f'{feature} by {split_column}')
+            ax.set_xlabel(feature)
+            ax.set_ylabel('Count')
+            ax.legend()
+        else:
+            print(f"The feature '{feature}' or the split column '{split_column}' is not in the DataFrame.")
+    for i in range(num_features, num_rows * 3):
+        fig.delaxes(axes.flatten()[i])
+
+    plt.tight_layout()  
+    plt.show()
+
+# Código:
+# Call the function to plot the stacked histograms
+plot_stacked_grid_histogram(df_diabetes, ['Glucose', 'BloodPressure', 'SkinThickness', 'Insulin', 'BMI', 'DiabetesPedigreeFunction', 'Age'], 'Outcome')
+
+# Texto:
+Con base en los histogramas obtenidos, es fácil de observar que en su mayoría para cualquier feature donde están los valores altos es donde hay más concentración de mujeres diabéticas. Es importante ver que no es tan significativo en algunos casos como lo es la presión sanguínea.
+
+Ahora, para observar que tan relacionada está la edad con estos datos vistos anteriormente, se pretende evaluar de manera similar cada columna en comparación de la edad para ver las diabéticas y las no diabéticas. Para este caso se recurrió al uso de diagramas de dispersión. Se seguió una técnica para agilizar el proceso similar al anterior donde se crea una función que luego se llama con el nombre del *dataset*, el arreglo de *features* a evaluar, las columnas a comparar y los *labels*.
+
+# Código:
+def scatter_plots_grid_by_feature_and_split(df, features, split_column, y_column, labels):
+    num_features = len(features)
+    colors = ['#40E0D0', '#006064']
+
+    num_rows = (num_features + 2) // 3  
+
+    fig, axes = plt.subplots(num_rows, 3, figsize=(15, 5 * num_rows))  
+    axes_flattened = axes.flatten() if num_rows > 1 else [axes]
+
+    for i, feature in enumerate(features):
+        ax = axes_flattened[i]
+        for idx, outcome in enumerate(sorted(df[split_column].unique())):
+            subset = df[df[split_column] == outcome]
+            ax.scatter(subset[feature], subset[y_column], c=colors[idx], label=labels[idx], alpha=0.6)
+
+        ax.set_title(f'{feature} vs {y_column}')
+        ax.set_xlabel(feature)
+        ax.set_ylabel(y_column)
+        if i == 0:  
+            ax.legend()
+
+    for i in range(num_features, num_rows * 3):
+        fig.delaxes(axes_flattened[i])
+
+    plt.tight_layout()  
+    plt.show()
+
+# Código:
+labels = ['Non-Diabetic', 'Diabetic']
+scatter_plots_grid_by_feature_and_split(df_diabetes, ['Pregnancies', 'Glucose', 'BloodPressure', 'SkinThickness', 'Insulin', 'BMI', 'DiabetesPedigreeFunction'], 'Outcome', 'Age', labels)
+
+
+# Texto:
+Con los resultados obtenidos, se muestra que las mujeresd diabéticas tienden a estar entre los valores más bajos en cuantos a edad. Los datos están más concentrados en las edades bajas en todos los *features* sólo en algunos casos como los embarazos o nuevamente la prsión sanguíonea tienen más disperción de datos.
+
+Con esto se concluye con el análisis del primer dataset. 
+
+# Texto:
+### Preprocesamiento de datos
+En esta sección se procede a realizar el preprocesamiento de datos para el dataset *Pima Indians Diabetes Database*. Que consiste en separar el set de datos en training (80%) y testing (20%).
+
+# Código:
+# Remove the 'Pregnancies' column from the dataset
+df_diabetes = df_diabetes.drop('Pregnancies', axis=1)
+
+
+# Código:
+import numpy as np
+from scipy import stats
+# Calculamos el puntaje Z (la desviación en términos de desviación estándar)
+z_scores = np.abs(stats.zscore(df_diabetes))
+
+# Establecemos un umbral para identificar los outliers
+threshold = 3
+
+# Obtenemos un arreglo booleano de donde los puntajes Z están fuera del umbral
+outliers = (z_scores > threshold).any(axis=1)
+
+# Filtramos los outliers de nuestro DataFrame
+df_filtered = df_diabetes[~outliers]
+
+# Ahora podrías separar tu conjunto de datos ya filtrado.
+X = df_filtered.drop(['Outcome'], axis=1)
+y = df_filtered['Outcome']
+
+# Código:
+from sklearn.model_selection import train_test_split
+
+# Set the random seed for reproducibility
+random_seed = 42
+
+# Split the dataframe into training and testing sets
+train_df, test_df = train_test_split(df_filtered, test_size=0.2, random_state=random_seed)
+
+# Print the shapes of the training and testing sets
+print("Training set shape:", train_df.shape)
+print("Testing set shape:", test_df.shape)
+
+
+# Texto:
+# Spliteado
+
+# Código:
+from sklearn.model_selection import train_test_split
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.metrics import accuracy_score, precision_score, recall_score
+from sklearn.preprocessing import StandardScaler
+from imblearn.over_sampling import SMOTE
+
+# Suponiendo que `train_df` y `test_df` ya están definidos y los outliers removidos
+
+# Separar las características y el objetivo
+X_train = train_df.drop(['Outcome'], axis=1)
+y_train = train_df['Outcome']
+X_test = test_df.drop(['Outcome'], axis=1)
+y_test = test_df['Outcome']
+
+# Aplicar SMOTE solo al conjunto de entrenamiento para tratar el desequilibrio
+smote = SMOTE(random_state=42)
+X_train_smote, y_train_smote = smote.fit_resample(X_train, y_train)
+
+# Estandarización de las características después de aplicar SMOTE
+scaler = StandardScaler()
+X_train_scaled = scaler.fit_transform(X_train_smote)
+X_test_scaled = scaler.transform(X_test)
+
+# Inicialización del modelo KNN
+knn = KNeighborsClassifier(n_neighbors=5)
+knn.fit(X_train_scaled, y_train_smote)  # Usa los datos de entrenamiento sobremuestreados
+
+# Predicciones
+y_pred = knn.predict(X_test_scaled)
+
+# Evaluación del modelo
+print("Después de aplicar SMOTE y Estandarización:")
+print("Accuracy:", accuracy_score(y_test, y_pred))
+print("Precision:", precision_score(y_test, y_pred))
+print("Recall:", recall_score(y_test, y_pred))
+
+
+# Código:
+from sklearn.preprocessing import StandardScaler
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.metrics import accuracy_score, precision_score, recall_score
+
+# Estandarización de las características
+scaler = StandardScaler()
+X_train_scaled = scaler.fit_transform(train_df.drop(['Outcome'], axis=1))
+X_test_scaled = scaler.transform(test_df.drop(['Outcome'], axis=1))
+
+y_train = train_df['Outcome']
+y_test = test_df['Outcome']
+
+# Inicialización del modelo KNN
+knn = KNeighborsClassifier(n_neighbors=5)
+knn.fit(X_train_scaled, y_train)
+
+# Predicciones
+y_pred = knn.predict(X_test_scaled)
+
+# Evaluación del modelo
+print("Estandarización:")
+print("Accuracy:", accuracy_score(y_test, y_pred))
+print("Precision:", precision_score(y_test, y_pred))
+print("Recall:", recall_score(y_test, y_pred))
+
+
+# Código:
+from sklearn.preprocessing import MinMaxScaler
+
+# Normalización de las características
+scaler = MinMaxScaler()
+X_train_normalized = scaler.fit_transform(train_df.drop(['Outcome'], axis=1))
+X_test_normalized = scaler.transform(test_df.drop(['Outcome'], axis=1))
+
+# No necesitamos redefinir y_train y y_test ya que permanecen iguales
+
+# Inicialización del modelo KNN
+knn = KNeighborsClassifier(n_neighbors=5)
+knn.fit(X_train_normalized, y_train)
+
+# Predicciones
+y_pred_normalized = knn.predict(X_test_normalized)
+
+# Evaluación del modelo
+print("\nNormalización:")
+print("Accuracy:", accuracy_score(y_test, y_pred_normalized))
+print("Precision:", precision_score(y_test, y_pred_normalized))
+print("Recall:", recall_score(y_test, y_pred_normalized))
+
+
+# Código:
+from sklearn.model_selection import train_test_split
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.metrics import accuracy_score, precision_score, recall_score
+from sklearn.preprocessing import MinMaxScaler
+
+# Asumiendo que df_diabetes es tu DataFrame después de la limpieza y la imputación
+X = df_diabetes.drop(['Outcome'], axis=1)  # Excluimos la columna 'Outcome'
+y = df_diabetes['Outcome']
+
+# Dividimos los datos en conjuntos de entrenamiento y prueba
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Inicializamos el scaler
+scaler = MinMaxScaler()
+
+# Ajustamos y transformamos los datos de entrenamiento y solo transformamos los datos de prueba
+X_train_scaled = scaler.fit_transform(X_train)
+X_test_scaled = scaler.transform(X_test)
+
+# Inicializamos el modelo KNN
+knn = KNeighborsClassifier(n_neighbors=8)
+
+# Ajustamos el modelo en los datos de entrenamiento escalados
+knn.fit(X_train_scaled, y_train)
+
+# Hacemos predicciones en el conjunto de prueba
+y_pred = knn.predict(X_test_scaled)
+
+# Evaluamos el modelo
+accuracy = accuracy_score(y_test, y_pred)
+precision = precision_score(y_test, y_pred)
+recall = recall_score(y_test, y_pred)
+
+print(f"Accuracy: {accuracy}")
+print(f"Precision: {precision}")
+print(f"Recall: {recall}")
+
+
+# Código:
+from sklearn.model_selection import train_test_split
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.metrics import accuracy_score, precision_score, recall_score
+from sklearn.preprocessing import MinMaxScaler
+
+# Asumiendo que df_diabetes es tu DataFrame después de la limpieza y la imputación
+X = df_diabetes.drop(['Outcome'], axis=1)  # Excluimos la columna 'Outcome'
+y = df_diabetes['Outcome']
+
+# Dividimos los datos en conjuntos de entrenamiento y prueba
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Inicializamos el scaler
+scaler = StandardScaler()
+
+# Ajustamos y transformamos los datos de entrenamiento y solo transformamos los datos de prueba
+X_train_scaled = scaler.fit_transform(X_train)
+X_test_scaled = scaler.transform(X_test)
+
+# Inicializamos el modelo KNN
+knn = KNeighborsClassifier(n_neighbors=8)
+
+# Ajustamos el modelo en los datos de entrenamiento escalados
+knn.fit(X_train_scaled, y_train)
+
+# Hacemos predicciones en el conjunto de prueba
+y_pred = knn.predict(X_test_scaled)
+
+# Evaluamos el modelo
+accuracy = accuracy_score(y_test, y_pred)
+precision = precision_score(y_test, y_pred)
+recall = recall_score(y_test, y_pred)
+
+print(f"Accuracy: {accuracy}")
+print(f"Precision: {precision}")
+print(f"Recall: {recall}")
+
+
+# Código:
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score, precision_score, recall_score
+from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import Pipeline
+
+# Preparación de los datos
+X = df_diabetes.drop(['Outcome'], axis=1)
+y = df_diabetes['Outcome']
+
+# Dividimos los datos en conjuntos de entrenamiento y prueba
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Creamos la tubería de procesamiento con estandarización y regresión logística
+pipeline = Pipeline([
+    ('scaler', StandardScaler()),  # Estandarización
+    ('logistic_regression', LogisticRegression())  # Regresión Logística
+])
+
+# Entrenamos la tubería
+pipeline.fit(X_train, y_train)
+
+# Hacemos predicciones en el conjunto de prueba
+y_pred = pipeline.predict(X_test)
+
+# Evaluamos el modelo
+accuracy = accuracy_score(y_test, y_pred)
+precision = precision_score(y_test, y_pred, average='macro')
+recall = recall_score(y_test, y_pred, average='macro')
+
+print(f"Accuracy: {accuracy:.2f}")
+print(f"Precision: {precision:.2f}")
+print(f"Recall: {recall:.2f}")
+
+
+# Código:
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler, MinMaxScaler
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.metrics import accuracy_score, precision_score, recall_score
+from sklearn.model_selection import train_test_split
+
+# Preparamos los datos
+X = df_diabetes.drop('Outcome', axis=1)
+y = df_diabetes['Outcome']
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Creamos la tubería
+pipeline = Pipeline([
+    ('standard_scaler', StandardScaler()),  # Primero estandarizamos
+    ('knn', KNeighborsClassifier(n_neighbors=8))  # Finalmente, aplicamos KNN
+])
+
+# Entrenamos la tubería
+pipeline.fit(X_train, y_train)
+
+# Evaluamos el modelo
+y_pred = pipeline.predict(X_test)
+accuracy = accuracy_score(y_test, y_pred)
+precision = precision_score(y_test, y_pred)
+recall = recall_score(y_test, y_pred)
+
+print(f"Accuracy: {accuracy}")
+print(f"Precision: {precision}")
+print(f"Recall: {recall}")
+
+
+# Texto:
+## Heart Failure Prediction Dataset
+Seguidamente, se procede con la exploración y el preprocesamiento de datos para el conjunto de datos *Heart Failure Prediction Dataset*. Dicho *dataset* fue elegido por el equipo de trabajo cómo el segundo conjunto de datos a analizar. Al inicio del notebook se explicó el motivo de su elección, en el informe se ampliará más en detalle dicho motivo.
+
+### Analisis Exploratorio de Datos
+Primero, se importan las librerías necesarias para el análisis exploratorio de datos.
+
+# Código:
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Texto:
+Ahora, se procede a cargar los datos del nuevo *dataset*. Del mismo modo, se comienza a explorar el conjunto de datos para obtener la información básica importante. Para lograr esto, se visualizan algunos datos para poder ver las columnas y los datos correspondientes, se obtienen las estadísticas básicas, la cantidad de datos faltantes y la correlación entre columnas.
+
+# Código:
+# Load dataset
+df_heart = pd.read_csv('heart.csv')
+
+# Display 20 rows
+print(df_heart.head(20))
+
+# Código:
+# Get basic statistics 
+print(df_heart.describe())
+
+# Código:
+# Number of missing values in each column
+print(df_heart.isnull().sum())
+
+# Código:
+df_heart.count()
+
+# Texto:
+Con esta información, se obtiene que el *dataset* posee 12 columnas de las cuales *FastingsBS*, *Oldpeak* y obviamente *HeartDisease* tienen la posibilidad de tener un 0 sin que sea un problema para el análisis. Adicionalmente, se evidencia que el dataset tiene una cantidad de 918 datos y que no hay datos nulos o faltantes.
+
+Ahora, se procede a revisar si hay filas duplicadas para eliminarlas. Del mismo modo, tras el análisis anterior se pudo notar que la mayoría de las columnas posee un valor no numérico por lo que se procede a codificar cada una con el fin de obtener columnas con datos totalmente numéricos.
+
+El *label encoding* es utilizado para transformar variables categóricas no numéricas en formatos numéricos para que puedan ser procesadas por algoritmos de machine learning. Cada etiqueta única de la categoría se asigna a un entero distinto. Esta técnica es particularmente útil para variables con un número limitado de categorías donde no se requiere la distinción de orden o prioridad entre las mismas.
+
+Por esta razón, se implementó el *label encoding* para las columnas categóricas del conjunto de datos, con excepción de aquellas que son binarias o donde la relación ordinal es relevante. A continuación se explican las codificaciones: 
+- Para las columnas *Sex* y *ExerciseAngina* se obtuvo una codificación binaria debido a que sólo tenían dos posibles valores.
+  - *Sex* se utiliza **1** para M y **0** para F.
+  - *ExerciseAngina* se utiliza **1** para Y y **0** para N.
+- Para las columnas *ChestPainType*, *RestingECG* y *ST_Slope* se utilizó inicialmente la codificación de one-hot para evitar que se asuma un orden numérico entre las categorías, sin embargo, tras la consulta con el profesor se sugirió seguir el método anterior para estas columnas también. 
+  - *ChestPainType* se utiliza **1** para ATA, **2** para NAP, **0** para ASY y **3** para TA
+  - *RestingECG* se utiliza **1** para Normal, **2** para ST y **0** para LVH
+  - *ST_Slope* se utiliza **1** para Flat, **2** para Up y **0** para Down
+
+# Código:
+# Check for duplicate rows and remove them
+print(df_heart.duplicated().sum())
+df_heart = df_heart.drop_duplicates()
+
+# Código:
+# Label codification 
+from sklearn.preprocessing import LabelEncoder
+
+le = LabelEncoder()
+df_heart['Sex'] = le.fit_transform(df_heart['Sex'])
+df_heart['ExerciseAngina'] = le.fit_transform(df_heart['ExerciseAngina'])
+df_heart['ChestPainType'] = le.fit_transform(df_heart['ChestPainType'])
+df_heart['RestingECG'] = le.fit_transform(df_heart['RestingECG'])
+df_heart['ST_Slope'] = le.fit_transform(df_heart['ST_Slope'])
+
+# Código:
+print(df_heart.head(20))
+
+# Código:
+print(df_heart.tail(20))
+
+# Código:
+print(df_heart.corr())
+
+# Texto:
+Debido a que no habían filas duplicadas, no se eliminó nada. Tras el cambio del dataset realizado con el método de *label encoding*, se puede proceder a analizar mediante el uso de diversos diagramas para ver el comportamiento del dataset de manera visual.
+
+El siguiente histograma permitirá ver el rango de edades y sexo que se encuentran dentro del conjunto de datos, esto con el fin de obtener una idea general de los datos obtenidos.
+
+# Código:
+# Histogram of the Age column
+plt.hist(df_heart['Age'], bins=10, color='#3CB371', edgecolor='black')
+plt.title('Histogram of Age')
+plt.xlabel('Age')
+plt.ylabel('Frequency')
+plt.show()
+
+# Histogram of the Sex column
+male_count = np.sum(df_heart['Sex'] == 1)
+female_count = np.sum(df_heart['Sex'] == 0)
+plt.bar(['F', 'M'], [female_count, male_count], color=['#FFC0CB', '#40E0D0'], edgecolor='black')  
+plt.title('Histogram of Sex')
+plt.xlabel('Sex')
+plt.ylabel('Frequency')
+plt.show()
+
+# Texto:
+Con los datos obtenidos, se evidencia que la mayoría de las personas se encuentran en un rango de edad entre 50 y 60 años, además que la mayoría son hombres.
+
+Ahora, se procede con un análisis un poco más profundo. Se desea observar el porcentaje y la cantidad de personas que sí tienen una enfermedad cardiovascular en comparación con las personas que no lo tienen.
+
+# Código:
+# Distribution of the HeartDisease column for people with a heart disease and people without a heart disease
+palette_colors = {0: "#40E0D0", 1: "#006064"}  
+sns.countplot(x='HeartDisease', data=df_heart, hue="HeartDisease", palette=palette_colors)
+plt.title('Distribution of HeartDisease')
+plt.xlabel('HeartDisease')
+plt.ylabel('Frequency')
+plt.xticks([0, 1], ['Non-HeartDisease', 'HeartDisease'])
+plt.show()
+
+
+# Pie chart to visualize the proportion of diabetic and non-diabetic individuals
+labels = ['Non-HeartDisease', 'HeartDisease']
+sizes = df_heart['HeartDisease'].value_counts()
+colors = ['#40E0D0', '#006064']
+plt.pie(sizes, labels=labels, colors=colors, autopct='%1.1f%%', startangle=90)
+plt.title('Proportion of HeartDisease and Non-HeartDisease Individuals')
+plt.axis('equal')
+plt.show()
+
+# Texto:
+Con base en los resultados obtenidos, se puede ver que existe una mayor cantidad de persona que sí padecen de una enfermadad cardiovascular en el conjunto de datos con un 55.3% de los 918 datos existentes. Además, es importante destacar que este dataset sí se encuentra balanceado, no como el anterior.
+
+Ahora, para obtener una idea de como están relacionados los *features* con el hecho de que una persona tenga una enfermadad cardiovascular o no, se pretende comparar cada columna con la columna de *HeartDisease*. Para agilizar este proceso, se utilizará la misma función `plot_stacked_histogram` usada en el primer *dataset*, el arreglo de *features* con la cual se pretende comparar y la columna con la que se comparará.
+
+# Código:
+# Call the function to plot the stacked histograms
+plot_stacked_grid_histogram(df_heart, ['Age', 'Sex', 'RestingBP', 'Cholesterol', 'FastingBS', 'MaxHR', 'ExerciseAngina', 'Oldpeak',
+                                  'ChestPainType', 'RestingECG','ST_Slope'], 'HeartDisease')
+
+# Texto:
+Tras ejecutar esta función, se puede observar que en el *feature* *cholesterol* hay valores en 0 lo cual está incorrecto debido a que una persona no puede tener un colesterol en 0. Para corregir esto, se utilizará la misma solución usada para el primer dataset, es decir, la imputación de datos por la media. Posterior a esto, se volverá a ejecutar la función para ver los gráficos.
+
+# Código:
+df_heart['Cholesterol'] = df_heart['Cholesterol'].replace(0, np.nan)
+df_heart.fillna(df_heart.mean(), inplace=True)
+
+# Código:
+# Call the function to plot the stacked histograms
+plot_stacked_grid_histogram(df_heart, ['Age', 'Sex', 'RestingBP', 'Cholesterol', 'FastingBS', 'MaxHR', 'ExerciseAngina', 'Oldpeak',
+                                  'ChestPainType', 'RestingECG','ST_Slope'], 'HeartDisease')
+
+# Texto:
+Con base en los histogramas obtenidos, es fácil de observar que en su mayoría para cualquier feature donde están los valores altos es donde hay más concentración de personas con enfermedades cardiovasculares. Es importante ver que no es tan significativo en algunos casos como lo es con el *MaxHR*, *Cholesterol* e inclusive la edad. Del mismo modo, se puede ver que para las personas con enfermedades cardiovasculares, el *ChestPainType* es significativo para personas con *NAP*, el *RestingECG* es significativo para personas con *normal* y el *St_Slope* es signficativo para personas con *Flat*. 
+
+Ahora, para observar que tan relacionada está la edad con estos datos vistos anteriormente, se pretende evaluar de manera similar cada columna significativa en comparación de la edad para ver que tanto puede influir en tener una enfermedad cardiovacular o no. Para este caso se recurrió al uso de diagramas de dispersión. Se seguió la misma técnica para agilizar el proceso igual al usado con el dataset anterior donde se llama con el nombre del *dataset* y el arreglo de *features* a evaluar, los *features* por comparar y los *labels* que se utilizarán.
+
+Para las columnas no signifcativas, se realizó un *pie chart* que permitiera visualizar los datos de estos a pesar de que sus diagramas de dispersión no fuesen enriquecedor para el análisis.
+
+# Código:
+# Call the function to plot the scatter plots
+labels = ['Non-HeartDisease', 'HeartDisease']
+scatter_plots_grid_by_feature_and_split(df_heart, ['RestingBP', 'Cholesterol', 'MaxHR', 'Oldpeak'], 'HeartDisease', 'Age', labels)
+
+# Código:
+columns_to_plot = ['Sex', 'FastingBS', 'ExerciseAngina', 'ChestPainType', 'RestingECG', 'ST_Slope']
+colors = ['#40E0D0', '#006064', '#20B2AA', '#008B8B'] 
+fig, axes = plt.subplots(nrows=2, ncols=3, figsize=(15, 10))
+
+
+axes = axes.flatten()
+for i, column in enumerate(columns_to_plot):
+    value_counts = df_heart[column].value_counts()
+    axes[i].pie(value_counts, labels=value_counts.index, autopct='%1.1f%%', startangle=90, colors=colors[:len(value_counts)])
+    axes[i].set_title(column)
+plt.tight_layout()
+plt.show()
+
+# Texto:
+Con los resultados obtenidos, se muestra que las personas con enfermedades cardiovasculares tienden a estar dispersos entre todo el diagrama, esto puede indicar que la edad realmente no es un factor influyente para clasificar si una persona puede padecer o no de una enfermedad cardiovascular. En las columnas *ChestPainType*, *RestingECG* y *St_Slope*, es un poco más fácil de evidenciar que en su mayoría corresponden a persona que sí padecen de estas enfermadades y que estas es su mayoría se concentran en los mismo valores encontrados en los gráficos anteriores.
+
+Con esto se concluye con el análisis del segundo dataset y con esto se puede proceder a la implementación de los modelos KNN, Regresión Lineal y Redes Neuronales para finalmente poder realizar las comparaciones solicitadas.
+
+### Hipótesis
+Una vez concluidos los análisis de ambos *datasets*, se procede a buscar una hipótesis para cada uno. Del mismo modo, el equipo decidio comprobar una tercera hipótesis sobre la comparación de los resultados obtenidos con cada modelo para los dos conjuntos de datos.
+- **Hipótesis 1:** La edad es un factor determinante a la hora de clasificar si una mujer es diabética o no, sin importar los demás *features* evaluados.
+- **Hipótesis 2:** Los tres algoritmos tendrán dificultades para clasificar correctamente a los pacientes cuando solamente se consideren las características relacionadas al *dataset Heart Failure Prediction Dataset*, como los resultados del *ST_Slope* y los resultados del *Resting_ECG*.
+- **Hipótesis 3:** El modelo de las redes neuronales tendrá las mejores métricas de los tres algoritmos aplicado en cualquiera de los dos *datasets*.
+
+# Texto:
+### Preprocesamiento de datos
+En esta sección se procede a realizar el preprocesamiento de datos para el dataset *Heart Failure Prediction Dataset*. Que consiste en separar el set de datos en training (80%) y testing (20%).
+
+# Código:
+from sklearn.model_selection import train_test_split
+
+# Set the random seed for reproducibility
+random_seed = 42
+
+# Split the dataframe into training and testing sets
+train_df_heart, test_df_heart = train_test_split(df_heart, test_size=0.2, random_state=random_seed)
+
+# Print the shapes of the training and testing sets
+print("Training set shape:", train_df_heart.shape)
+print("Testing set shape:", test_df_heart.shape)
+
