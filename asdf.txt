@@ -6,15 +6,23 @@
 - **Fernanda Murillo Mena** - 2021077803
 
 ## Descripción
-Este notebook corresponde al análisis de pruebas realizadas para el modelo de KNN.
+Este proyecto tiene como objetivo principal aplicar diversas técnicas de clasificación de datos aplicados para dos conjuntos de datos, esto permite explorar diversas herramientas relacionadas al Machine Learning, y contribuir al desarrollo del conocimiento a partir de la investigación. Se utilizarán los modelos KNN, regresión lineal y redes neuronales con el fin de analizar ambos conjuntos de datos.
 
+## Conjunto de datos
+1. **Pima Indians Diabetes Database**
+    - **URL:** https://www.kaggle.com/datasets/uciml/pima-indians-diabetes-database
+    - **Descripción:** Este conjunto de datos proviene del Instituto Nacional de Diabetes y Enfermedades Digestivas y Renales. El objetivo del conjunto de datos es predecir de forma diagnóstica si un paciente tiene diabetes o no, basándose en ciertas mediciones de diagnóstico incluidas en el conjunto de datos. Se impusieron varias restricciones a la selección de estas instancias de una base de datos más grande. En particular, todos los pacientes aquí son mujeres de al menos 21 años de edad de ascendencia india Pima.
+2. **Heart Failure Prediction Dataset** <br>
+   Este fue el dataset elegido por el equipo de trabajo debido a que fue el dataset relacionado a salud con una cantidad de features adecuada y el más parecido al primer dataset dado por el profesor en cuanto al tamaño de samples. 
+    - **URL:** https://www.kaggle.com/datasets/fedesoriano/heart-failure-prediction
+    - **Descripción:** Las enfermedades cardiovasculares (ECV) son la principal causa de muerte a nivel mundial y se estima que cobran 17,9 millones de vidas cada año, lo que representa el 31% de todas las muertes en todo el mundo. Cuatro de cada cinco muertes por ECV se deben a ataques cardíacos y accidentes cerebrovasculares, y un tercio de estas muertes ocurren prematuramente en mujeres menores de 70 años. La insuficiencia cardíaca es un evento común causado por enfermedades cardiovasculares y este conjunto de datos contiene 11 características que pueden usarse para predecir una posible enfermedad cardíaca. Las mujeres con enfermedades cardiovasculares o que tienen un alto riesgo cardiovascular (debido a la presencia de uno o más factores de riesgo como hipertensión, diabetes, hiperlipidemia o enfermedades ya establecidas) necesitan una detección y un tratamiento precoz en el que un modelo de aprendizaje automático puede ser de gran ayuda.
 
 # Texto:
 ## Pima Indians Diabetes Database
-Actualemente se procede hacer los cambios aplicados al dataset, según el análisis previo, por tanto no se explicará el código previo, ya que este fue explciado y detallado en su sección.
+Inicialmente, se procede con la exploración y el preprocesamiento de datos para el conjunto de datos *Pima Indians Diabetes Database*. Dicho dataset fue dado por el profesor del curso.
 
-# Texto:
-#### **Cargar dataset** 
+### Analisis Exploratorio de Datos
+Primero, se importan las librerías necesarias para el análisis exploratorio de datos.
 
 # Código:
 import pandas as pd
@@ -22,22 +30,58 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 
+# Texto:
+Ahora, se procede a cargar los datos del dataset. Del mismo modo, se comienza a explorar el conjunto de datos para obtener la información básica importante. Para lograr esto, se visualizan algunos datos para poder ver las columnas y los datos correspondientes, se obtienen las estadísticas básicas, la cantidad de datos faltantes y la correlación entre columnas.
+
 # Código:
 # Load dataset
 df_diabetes = pd.read_csv('diabetes.csv')
+
+# Display 20 rows 
+print(df_diabetes.head(20))
+
+# Código:
+# Get basic statistics 
+print(df_diabetes.describe())
+
+# Código:
+# Number of missing values in each column
+print(df_diabetes.isnull().sum())
+
+# Código:
+# Correlation between columns
+print(df_diabetes.corr())
+
+# Código:
+df_diabetes.count()
+
+# Texto:
+Con esta información, se obtiene que el dataset posee 9 columnas de las cuales *pregnancies* tiene la posibilidad de tener un 0 sin que sea un problema para el análisis, esto porque una mujer puede tener 0 embarazos. Además, la columna *outcome* tiene un valor binario por lo que también puede tener un valor 0. Se evidencia que el dataset tiene una cantidad de 768 datos y que no hay datos nulos o faltantes.
+
 
 
 # Texto:
 #### **Eliminar filas duplicadas**
 
 
+Ahora, se procede a revisar si hay filas duplicadas para eliminarlas. Del mismo modo, tras el análisis anterior se pudo notar que algunas columnas (además de las permitidas) poseen valores en 0 por lo que es de suma importancia corregirlo para el análisis del dataset con los modelos más adelante. 
+
 
 # Código:
 # Check for duplicate rows and remove them
 print(df_diabetes.duplicated().sum())
+df_diabetes = df_diabetes.drop_duplicates()
 
 # Texto:
-#### **Imputación de datos**
+#### **Imputación de Datos en el Primer Conjunto de Datos**
+
+Dentro de nuestro análisis, identificamos la presencia de valores ausentes o cero en varias columnas del primer conjunto de datos. La **_imputación de datos_** surge como una estrategia fundamental para abordar este desafío, permitiéndonos conservar la integridad de nuestras *features* sin necesidad de eliminar registros completos.
+
+La técnica seleccionada para esta etapa inicial ha sido la *imputación por la media*, una metodología ampliamente reconocida por su eficacia al tratar con datos faltantes. Este método consiste en calcular el promedio de los valores no nulos dentro de una columna y utilizar este promedio para reemplazar los valores ausentes o cero. Esta aproximación es particularmente ventajosa porque el valor medio representa un punto de equilibrio en la distribución de los datos, minimizando así el impacto en la variabilidad general de la *feature*.
+
+En nuestro primer conjunto de datos, esta imputación se ha aplicado a todas las columnas con excepción de `Pregnancies` y `Outcome`, debido a la naturaleza específica de estos atributos donde los valores en cero tienen una interpretación clara y no se consideran ausentes o incorrectos.
+
+Esta decisión estratégica nos permite avanzar en el análisis con un conjunto de datos más completo y representativo, facilitando la aplicación de técnicas estadísticas y de machine learning de manera más efectiva.
 
 
 # Código:
@@ -52,481 +96,243 @@ df_diabetes['Age'] = df_diabetes['Age'].replace(0, np.nan)
 df_diabetes.fillna(df_diabetes.mean(), inplace=True)
 
 # Texto:
-#### **Remover outliers**
+- Debido a que no habían filas duplicadas, el resultado fue cero. 
+- Tras el cambio del dataset realizado con la imputación por la media, se puede proceder a analizar mediante el uso de diversos diagramas para ver el comportamiento del dataset de manera visual.
+
+# Texto:
+#### **Visualización de los datos**
+Ahora, se procede con un análisis un poco más profundo. Se desea observar el porcentaje y la cantidad de mujeres diabéticas en comparación con las mujeres que no lo padecen. Dónde se provará diferentes casos para el dataset:
+1. Histograma de Edades
+2. Balanceo
+3. Gráficos de Barra
+4. Gráficos de dispersion 
+
+# Texto:
+- **Histograma de Edad:** El siguiente histograma permitirá ver el rango de edades que se encuentran dentro del conjunto de datos, esto con el fin de obtener una idea general de los datos obtenidos. 
+
+# Código:
+# Histogram of the Age column
+plt.hist(df_diabetes['Age'], bins=10, color='#3CB371', edgecolor='black')
+plt.title('Histogram of Age')
+plt.xlabel('Age')
+plt.ylabel('Frequency')
+plt.show()
+
+# Texto:
+Con la información obtenida se evidencia que la mayoría de mujeres se encuentra en un rango de edad entre 20 y 30 años. 
+
+# Texto:
+- **Gráficos para mostrar el Balanceo de Datos**
+
+# Código:
+# Distribution of the Outcome column for people with diabetes and people without diabetes
+palette_colors = {0: "#40E0D0", 1: "#006064"}  
+sns.countplot(x='Outcome', data=df_diabetes, hue="Outcome", palette=palette_colors)
+plt.title('Distribution of Outcome')
+plt.xlabel('Outcome')
+plt.ylabel('Frequency')
+plt.xticks([0, 1], ['Non-Diabetic', 'Diabetic'])
+plt.show()
+
+# Pie chart to visualize the proportion of diabetic and non-diabetic individuals
+labels = ['Non-Diabetic', 'Diabetic']
+sizes = df_diabetes['Outcome'].value_counts()
+colors = ['#40E0D0', '#006064']
+plt.pie(sizes, labels=labels, colors=colors, autopct='%1.1f%%', startangle=90)
+plt.title('Proportion of Diabetic and Non-Diabetic Individuals')
+plt.axis('equal')
+plt.show()
+
+# Texto:
+Con base en los resultados obtenidos, se puede ver que existe una mayor cantidad de mujeres que no padecen de diabetes en el conjunto de datos con un 65.1% de los 768 datos existentes. A demás, es importante ver que en el *pie chart* el dataset no está balanceado.
+
+# Texto:
+- **Gráficos de barra**
+
+Para obtener una idea de como están relacionados los *features* con el hecho de que una mujer sea diabética o no, se pretende comparar cada columna con la columna de *outcome*. Para agilizar este proceso, primero se creó una función que recibe el dataset, el arreglo de *features* con la cual se pretende comparar y la columna con la que se va a comparar.
+
+# Código:
+def plot_stacked_grid_histogram(df, features, split_column):
+    num_features = len(features)
+    colors = ['#40E0D0', '#006064']
+    
+    num_rows = (num_features + 2) // 3  
+    
+    fig, axes = plt.subplots(num_rows, 3, figsize=(15, 5 * num_rows)) 
+
+    if num_rows > 1:
+        axes = axes.flatten()
+    
+    for i, feature in enumerate(features):
+        ax = axes[i] if num_rows > 1 else axes
+        if feature in df.columns and split_column in df.columns:
+            ax.hist([df[df[split_column] == 0][feature], df[df[split_column] == 1][feature]], 
+                    bins=10, stacked=True, color=colors, 
+                    label=[f'Not {split_column}', f'{split_column}'], edgecolor='black')
+            ax.set_title(f'{feature} by {split_column}')
+            ax.set_xlabel(feature)
+            ax.set_ylabel('Count')
+            ax.legend()
+        else:
+            print(f"The feature '{feature}' or the split column '{split_column}' is not in the DataFrame.")
+    for i in range(num_features, num_rows * 3):
+        fig.delaxes(axes.flatten()[i])
+
+    plt.tight_layout()  
+    plt.show()
+
+# Código:
+# Call the function to plot the stacked histograms
+plot_stacked_grid_histogram(df_diabetes, ['Glucose', 'BloodPressure', 'SkinThickness', 'Insulin', 'BMI', 'DiabetesPedigreeFunction', 'Age'], 'Outcome')
+
+# Texto:
+Con base en los histogramas obtenidos, es fácil de observar que en su mayoría para cualquier feature donde están los valores altos es donde hay más concentración de mujeres diabéticas. Es importante ver que no es tan significativo en algunos casos como lo es la presión sanguínea.
+
+# Texto:
+- **Gráficos de dispersión**
+
+Ahora, para observar que tan relacionada está la edad con estos datos vistos anteriormente, se pretende evaluar de manera similar cada columna en comparación de la edad para ver las diabéticas y las no diabéticas. Para este caso se recurrió al uso de diagramas de dispersión. Se seguió una técnica para agilizar el proceso similar al anterior donde se crea una función que luego se llama con el nombre del *dataset*, el arreglo de *features* a evaluar, las columnas a comparar y los *labels*.
 
 
 # Código:
-from scipy import stats
+def scatter_plots_grid_by_feature_and_split(df, features, split_column, y_column, labels):
+    num_features = len(features)
+    colors = ['#40E0D0', '#006064']
+
+    num_rows = (num_features + 2) // 3  
+
+    fig, axes = plt.subplots(num_rows, 3, figsize=(15, 5 * num_rows))  
+    axes_flattened = axes.flatten() if num_rows > 1 else [axes]
+
+    for i, feature in enumerate(features):
+        ax = axes_flattened[i]
+        for idx, outcome in enumerate(sorted(df[split_column].unique())):
+            subset = df[df[split_column] == outcome]
+            ax.scatter(subset[feature], subset[y_column], c=colors[idx], label=labels[idx], alpha=0.6)
+
+        ax.set_title(f'{feature} vs {y_column}')
+        ax.set_xlabel(feature)
+        ax.set_ylabel(y_column)
+        if i == 0:  
+            ax.legend()
+
+    for i in range(num_features, num_rows * 3):
+        fig.delaxes(axes_flattened[i])
+
+    plt.tight_layout()  
+    plt.show()
+
+# Código:
+labels = ['Non-Diabetic', 'Diabetic']
+scatter_plots_grid_by_feature_and_split(df_diabetes, ['Pregnancies', 'Glucose', 'BloodPressure', 'SkinThickness', 'Insulin', 'BMI', 'DiabetesPedigreeFunction'], 'Outcome', 'Age', labels)
+
+
+# Texto:
+Con los resultados obtenidos, se muestra que las mujeresd diabéticas tienden a estar entre los valores más bajos en cuantos a edad. Los datos están más concentrados en las edades bajas en todos los *features* sólo en algunos casos como los embarazos o nuevamente la prsión sanguíonea tienen más disperción de datos.
+
+# Texto:
+#### **Remover outliers**
+
+Los outliers son valores que difieren significativamente del resto de los datos. Pueden ser el resultado de errores de medición, variabilidad en la medición o incluso variaciones naturales en la población. Estos podrían ser valores extremadamente altos o bajos en las características como la glucosa, presión arterial, grosor de la piel, entre otros, que no se alinean con el rango esperado de estos parámetros.
+
+# Código:
 import numpy as np
-# Calculate Z-scores for each numerical feature in the DataFrame
+from scipy import stats
+
+# Calculate Z-scores
 z_scores = np.abs(stats.zscore(df_diabetes.select_dtypes(include=[np.number])))
 
-# Set a threshold for identifying outliers, typically 3
+# Set threshold for outliers
 threshold = 3
-# Create a boolean DataFrame where Z-scores exceed the threshold
+
+# Create boolean DataFrame for outliers
 outliers = (z_scores > threshold)
+
+# Filter DataFrame to remove outliers
 df_no_outliers = df_diabetes[~(outliers).any(axis=1)]
 
 print(f"Original DataFrame size: {df_diabetes.shape}")
 print(f"DataFrame size without outliers: {df_no_outliers.shape}")
 
+# Set up matplotlib figure for side-by-side plots
+fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(20, 8), sharey=True)
 
-# Texto:
-### **Dataset Pima Indians Diabetes Database**
-En esta sección se procede a realizar el preprocesamiento de datos para el dataset *Pima Indians Diabetes Database*. 
+# Plot titles and DataFrames
+titles = ['Original Dataset', 'Dataset Without Outliers']
+dataframes = [df_diabetes, df_no_outliers]
 
-Nótese que cada prueba hace una division de datos en training (80%) y testing (20%). Esto ya que las pruebas consisten en combinaciones del conjunto de datos, que seguirán el siguiente orden:
+# Plot colors for each dataset
+colors_original = ['#40E0D0', '#006064']  # Non-Diabetic and Diabetic
+colors_no_outliers = ['red', 'darkred']    # Non-Diabetic and Diabetic
 
-#### 1. **Dataset Original** 
-- Solo el conjunto tal y como se describe
-- Normalización
-- Estandarización
+for ax, df, title, color_set in zip(axes, dataframes, titles, [colors_original, colors_no_outliers]):
+    # Scatter plot for each outcome group
+    ax.scatter(df[df['Outcome'] == 0]['Glucose'], df[df['Outcome'] == 0]['Age'], alpha=0.6, label='Non-Diabetic', color=color_set[0])
+    ax.scatter(df[df['Outcome'] == 1]['Glucose'], df[df['Outcome'] == 1]['Age'], alpha=0.6, label='Diabetic', color=color_set[1])
 
-#### 2. **Conjunto de datos original sin la columna de Embarazos** `sin [Pregnancies]`
-- Solo el conjunto tal y como se describe
-- Normalización
-- Estandarización
+    # Set title, labels, and legend
+    ax.set_title(title)
+    ax.set_xlabel('Glucose')
+    ax.set_ylabel('Age')
+    ax.legend()
 
-#### 3. **Conjunto de datos sin outliers** `Sin Outliers`
-- Solo el conjunto tal y como se describe
-- Normalización
-- Estandarización
-
-#### 4. **Conjunto de datos sin outliers y sin la columna de Embarazos** `Sin outliers y sin [Pregnancies]`
-- Solo el conjunto tal y como se describe
-- Normalización
-- Estandarización
-
-#### 5. **Sobre muestreo** `Oversampling, sin outliers, sin [Pregnancies]`
-- Solo el conjunto tal y como se describe
-- Normalización
-- Estandarización
-    
-
-# Texto:
-#### Funciones útiles
-
-# Código:
-from sklearn.metrics import confusion_matrix
-from imblearn.over_sampling import SMOTE
-import seaborn as sns
-
-# Function to plot confusion matrix
-def plot_confusion_matrix(cm, title):
-    sns.heatmap(cm, annot=True, fmt="d", cmap='Blues')
-    plt.xlabel('Predicted')
-    plt.ylabel('Actual')
-    plt.title(title)
-    plt.xticks([0.5, 1.5], ['Non-diabetic', 'Diabetic'], ha='right')
-    plt.yticks([0.5, 1.5], ['Non-diabetic', 'Diabetic'], va='center')
-    plt.show()
-
-# Function to plot ROC curve
-def plot_roc_curve(fpr, tpr, roc_auc, title):
-    plt.figure()
-    plt.plot(fpr, tpr, color='darkorange', lw=2, label='ROC curve (area = %0.2f)' % roc_auc)
-    plt.plot([0, 1], [0, 1], color='navy', lw=2, linestyle='--')
-    plt.xlim([0.0, 1.0])
-    plt.ylim([0.0, 1.05])
-    plt.xlabel('False Positive Rate')
-    plt.ylabel('True Positive Rate')
-    plt.title(title)
-    plt.legend(loc="lower right")
-    plt.show()
-
-# Define function to calculate weighted score
-def weighted_score(accuracy, recall, precision):
-    return (0.4 * accuracy) + (0.3 * recall) + (0.3 * precision)
-
-# Código:
-random_state_result = 20
-
-# Texto:
-#### Dataset Original
-Se utiliza el conjunto de datos en su forma original, sin realizar modificaciones. Esto establece una línea base para entender cómo se comporta el modelo con los datos en su estado más puro.
-
-# Código:
-
-from sklearn.model_selection import train_test_split
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.preprocessing import MinMaxScaler
-from sklearn.metrics import accuracy_score, precision_score, recall_score
-
-
-# Split the data into features and target variable
-X = df_diabetes.drop('Outcome', axis=1)
-y = df_diabetes['Outcome']
-
-# Split the data into training and testing sets
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=random_state_result)
-
-
-# Train the KNN model with the original dataset without scaling
-knn = KNeighborsClassifier()
-knn.fit(X_train, y_train)
-
-# Predict on the test set
-y_pred_original = knn.predict(X_test)
-
-# Calculate and print metrics
-print("Original Dataset - Without Scaling")
-print(f"Accuracy: {accuracy_score(y_test, y_pred_original)}")
-print(f"Precision: {precision_score(y_test, y_pred_original)}")
-print(f"Recall: {recall_score(y_test, y_pred_original)}")
-plot_confusion_matrix(confusion_matrix(y_test, y_pred_original), "Original Dataset - Without Scaling")
-
-
-# Código:
-
-# Normalize the features
-scaler_norm = MinMaxScaler()
-X_train_normalized = scaler_norm.fit_transform(X_train)
-X_test_normalized = scaler_norm.transform(X_test)
-
-# Train the KNN model
-knn = KNeighborsClassifier()
-knn.fit(X_train_normalized, y_train)
-
-# Predict on the test set
-y_pred_norm = knn.predict(X_test_normalized)
-
-# Calculate and print the metrics
-print("Original Dataset - Normalization")
-print(f"Accuracy: {accuracy_score(y_test, y_pred_norm)}")
-print(f"Precision: {precision_score(y_test, y_pred_norm)}")
-print(f"Recall: {recall_score(y_test, y_pred_norm)}")
-plot_confusion_matrix(confusion_matrix(y_test, y_pred_original), "Original Dataset - Normalization")
-
-
-# Código:
-from sklearn.preprocessing import StandardScaler
-
-# Standardize the features
-scaler_std = StandardScaler()
-X_train_standardized = scaler_std.fit_transform(X_train)
-X_test_standardized = scaler_std.transform(X_test)
-
-# Train the KNN model
-knn.fit(X_train_standardized, y_train)
-y_pred_std = knn.predict(X_test_standardized)
-
-# Calculate and print the metrics
-print("Original Dataset - Standardization")
-print(f"Accuracy: {accuracy_score(y_test, y_pred_std)}")
-print(f"Precision: {precision_score(y_test, y_pred_std)}")
-print(f"Recall: {recall_score(y_test, y_pred_std)}")
-plot_confusion_matrix(confusion_matrix(y_test, y_pred_original), "Original Dataset - Standardization")
+plt.tight_layout()
+plt.show()
 
 
 # Texto:
-#### Conjunto de datos original sin la columna de Embarazos `sin [Pregnancies]`
-Al conjunto de datos original, se le eliminó la característica relacionada con los embarazos. Ya que se sabe que la característica de embarazos no es relevante para el problema en estudio y este puede sesgar el modelo.
-
-# Código:
-# Drop the 'Pregnancies' column
-X_no_preg = df_diabetes.drop(['Outcome', 'Pregnancies'], axis=1)
-X_train_no_preg, X_test_no_preg, y_train, y_test = train_test_split(X_no_preg, y, test_size=0.2, random_state=random_state_result)
-knn.fit(X_train_no_preg, y_train)
-y_pred_no_preg = knn.predict(X_test_no_preg)
-
-# Calculate and print the metrics
-print("Original Dataset without Pregnancies Column - Without Scaling")
-print(f"Accuracy: {accuracy_score(y_test, y_pred_no_preg)}")
-print(f"Precision: {precision_score(y_test, y_pred_no_preg)}")
-print(f"Recall: {recall_score(y_test, y_pred_no_preg)}")
-plot_confusion_matrix(confusion_matrix(y_test, y_pred_original), "Original Dataset without Pregnancies Column - Without Scaling")
-
-
-# Código:
-
-# Normalize the features
-X_train_no_preg_normalized = scaler_norm.fit_transform(X_train_no_preg)
-X_test_no_preg_normalized = scaler_norm.transform(X_test_no_preg)
-knn.fit(X_train_no_preg_normalized, y_train)
-y_pred_no_preg_norm = knn.predict(X_test_no_preg_normalized)
-
-# Calculate and print the metrics
-print("Original Dataset without Pregnancies Column - Normalization")
-print(f"Accuracy: {accuracy_score(y_test, y_pred_no_preg_norm)}")
-print(f"Precision: {precision_score(y_test, y_pred_no_preg_norm)}")
-print(f"Recall: {recall_score(y_test, y_pred_no_preg_norm)}")
-plot_confusion_matrix(confusion_matrix(y_test, y_pred_original), "Original Dataset without Pregnancies Column - Normalization")
-
-
-# Código:
-# Standardize the features
-X_train_no_preg_standardized = scaler_std.fit_transform(X_train_no_preg)
-X_test_no_preg_standardized = scaler_std.transform(X_test_no_preg)
-knn.fit(X_train_no_preg_standardized, y_train)
-y_pred_no_preg_std = knn.predict(X_test_no_preg_standardized)
-
-# Calculate and print the metrics
-print("Original Dataset without Pregnancies Column - Standardization")
-print(f"Accuracy: {accuracy_score(y_test, y_pred_no_preg_std)}")
-print(f"Precision: {precision_score(y_test, y_pred_no_preg_std)}")
-print(f"Recall: {recall_score(y_test, y_pred_no_preg_std)}")
-plot_confusion_matrix(confusion_matrix(y_test, y_pred_original), "Original Dataset without Pregnancies Column - Standardization")
-
-
-# Texto:
-#### Conjunto de datos sin outliers `Sin Outliers`
-Se limpian los datos eliminando los valores atípicos (outliers), lo que puede mejorar la precisión del modelo al eliminar anomalías que podrían llevar a sobreajustes o interpretaciones erróneas.
-
-# Código:
-# Split the data without outliers into features and target variable
-X_no_outliers = df_no_outliers.drop('Outcome', axis=1)
-y_no_outliers = df_no_outliers['Outcome']
-
-# Split the data into training and testing sets
-X_train_no_outliers, X_test_no_outliers, y_train_no_outliers, y_test_no_outliers = train_test_split(X_no_outliers, y_no_outliers, test_size=0.2, random_state=random_state_result)
-knn.fit(X_train_no_outliers, y_train_no_outliers)
-y_pred_no_outliers = knn.predict(X_test_no_outliers)
-
-# Calculate and print metrics
-print("Dataset No Outliers - Without Scaling")
-print(f"Accuracy: {accuracy_score(y_test_no_outliers, y_pred_no_outliers)}")
-print(f"Precision: {precision_score(y_test_no_outliers, y_pred_no_outliers)}")
-print(f"Recall: {recall_score(y_test_no_outliers, y_pred_no_outliers)}")
-plot_confusion_matrix(confusion_matrix(y_test, y_pred_original), "Dataset No Outliers - Without Scaling")
-
-
-
-# Código:
-
-# Normalize the features
-X_train_no_outliers_normalized = scaler_norm.fit_transform(X_train_no_outliers)
-X_test_no_outliers_normalized = scaler_norm.transform(X_test_no_outliers)
-knn.fit(X_train_no_outliers_normalized, y_train_no_outliers)
-y_pred_no_outliers_norm = knn.predict(X_test_no_outliers_normalized)
-
-# Calculate and print the metrics
-print("Dataset No Outliers - Normalization")
-print(f"Accuracy: {accuracy_score(y_test_no_outliers, y_pred_no_outliers_norm)}")
-print(f"Precision: {precision_score(y_test_no_outliers, y_pred_no_outliers_norm)}")
-print(f"Recall: {recall_score(y_test_no_outliers, y_pred_no_outliers_norm)}")
-plot_confusion_matrix(confusion_matrix(y_test, y_pred_original), "Dataset No Outliers - Normalization")
-
-
-# Código:
-# Standardize the features
-X_train_no_outliers_standardized = scaler_std.fit_transform(X_train_no_outliers)
-X_test_no_outliers_standardized = scaler_std.transform(X_test_no_outliers)
-knn.fit(X_train_no_outliers_standardized, y_train_no_outliers)
-y_pred_no_outliers_std = knn.predict(X_test_no_outliers_standardized)
-
-# Calculate and print the metrics
-print("Dataset No Outliers - Standardization")
-print(f"Accuracy: {accuracy_score(y_test_no_outliers, y_pred_no_outliers_std)}")
-print(f"Precision: {precision_score(y_test_no_outliers, y_pred_no_outliers_std)}")
-print(f"Recall: {recall_score(y_test_no_outliers, y_pred_no_outliers_std)}")
-plot_confusion_matrix(confusion_matrix(y_test, y_pred_original), "Dataset No Outliers - Standardization")
-
-
-# Texto:
-#### Conjunto de datos sin outliers y sin la columna de Embarazos `Sin outliers y sin [Pregnancies]`
-Combina la eliminación de outliers con la exclusión de la característica de embarazos. Este enfoque permite observar la limpieza profunda de datos en el rendimiento del modelo.
-
-# Código:
-# Drop the 'Pregnancies' column from the dataset without outliers
-X_no_outliers_no_preg = df_no_outliers.drop(['Outcome', 'Pregnancies'], axis=1)
-X_train_no_outliers_no_preg, X_test_no_outliers_no_preg, y_train_no_outliers, y_test_no_outliers = train_test_split(X_no_outliers_no_preg, y_no_outliers, test_size=0.2, random_state=random_state_result)
-
-knn.fit(X_train_no_outliers_no_preg, y_train_no_outliers)
-y_pred_no_outliers_no_preg = knn.predict(X_test_no_outliers_no_preg)
-
-# Calculate and print metrics
-print("Dataset No Outliers without Pregnancies Column - Without Scaling")
-print(f"Accuracy: {accuracy_score(y_test_no_outliers, y_pred_no_outliers_no_preg)}")
-print(f"Precision: {precision_score(y_test_no_outliers, y_pred_no_outliers_no_preg)}")
-print(f"Recall: {recall_score(y_test_no_outliers, y_pred_no_outliers_no_preg)}")
-plot_confusion_matrix(confusion_matrix(y_test, y_pred_original), "Dataset No Outliers - Without Scaling")
-
-
-# Código:
-# Normalize the features
-X_train_no_outliers_no_preg_normalized = scaler_norm.fit_transform(X_train_no_outliers_no_preg)
-X_test_no_outliers_no_preg_normalized = scaler_norm.transform(X_test_no_outliers_no_preg)
-
-knn.fit(X_train_no_outliers_no_preg_normalized, y_train_no_outliers)
-y_pred_no_outliers_no_preg_norm = knn.predict(X_test_no_outliers_no_preg_normalized)
-
-# Calculate and print the metrics
-print("Dataset No Outliers without Pregnancies Column - Normalization")
-print(f"Accuracy: {accuracy_score(y_test_no_outliers, y_pred_no_outliers_no_preg_norm)}")
-print(f"Precision: {precision_score(y_test_no_outliers, y_pred_no_outliers_no_preg_norm)}")
-print(f"Recall: {recall_score(y_test_no_outliers, y_pred_no_outliers_no_preg_norm)}")
-plot_confusion_matrix(confusion_matrix(y_test, y_pred_original), "Dataset No Outliers without Pregnancies Column - Normalization")
-
-
-# Código:
-# Standardize the features
-X_train_no_outliers_no_preg_standardized = scaler_std.fit_transform(X_train_no_outliers_no_preg)
-X_test_no_outliers_no_preg_standardized = scaler_std.transform(X_test_no_outliers_no_preg)
-
-knn.fit(X_train_no_outliers_no_preg_standardized, y_train_no_outliers)
-y_pred_no_outliers_no_preg_std = knn.predict(X_test_no_outliers_no_preg_standardized)
-
-# Calculate and print the metrics
-print("Dataset No Outliers without Pregnancies Column - Standardization")
-print(f"Accuracy: {accuracy_score(y_test_no_outliers, y_pred_no_outliers_no_preg_std)}")
-print(f"Precision: {precision_score(y_test_no_outliers, y_pred_no_outliers_no_preg_std)}")
-print(f"Recall: {recall_score(y_test_no_outliers, y_pred_no_outliers_no_preg_std)}")
-plot_confusion_matrix(confusion_matrix(y_test, y_pred_original), "Dataset No Outliers without Pregnancies Column - Standardization")
-
-
-# Texto:
-#### Sobre muestreo `Oversampling (SOMTE), sin outliers, sin [Pregnancies]`
-Se aplica técnicas de oversampling para aumentar la representación de las clases minoritarias en el conjunto de datos
-
-# Código:
-from imblearn.over_sampling import SMOTE
-
-# Apply SMOTE
-smote = SMOTE(random_state=random_state_result)
-X_smote, y_smote = smote.fit_resample(X_no_outliers_no_preg, y_no_outliers)
-
-X_train_smote, X_test_smote, y_train_smote, y_test_smote = train_test_split(X_smote, y_smote, test_size=0.2, random_state=random_state_result)
-# Train the KNN model
-knn = KNeighborsClassifier()
-knn.fit(X_train_smote, y_train_smote)
-y_pred_smote = knn.predict(X_test_smote)
-
-print("Oversampled Dataset - Without Scaling")
-print(f"Accuracy: {accuracy_score(y_test_smote, y_pred_smote)}")
-print(f"Precision: {precision_score(y_test_smote, y_pred_smote)}")
-print(f"Recall: {recall_score(y_test_smote, y_pred_smote)}")
-plot_confusion_matrix(confusion_matrix(y_test, y_pred_original), "Oversampled Dataset -  Without Scaling")
-
-
-# Código:
-
-# Normalize the features
-X_train_no_outliers_smote_no_preg_norm = scaler_norm.fit_transform(X_train_smote)
-X_test_no_outliers_smote_no_preg_norm = scaler_norm.transform(X_test_smote)
-
-
-knn.fit(X_train_no_outliers_smote_no_preg_norm, y_train_smote)
-y_pred_no_outliers_smote_std = knn.predict(X_test_no_outliers_smote_no_preg_norm)
-
-print("Oversampled No Outliers Dataset - Normalization")
-print(f"Accuracy: {accuracy_score(y_test_smote, y_pred_no_outliers_smote_std)}")
-print(f"Precision: {precision_score(y_test_smote, y_pred_no_outliers_smote_std)}")
-print(f"Recall: {recall_score(y_test_smote, y_pred_no_outliers_smote_std)}")
-plot_confusion_matrix(confusion_matrix(y_test, y_pred_original), "Oversampled No Outliers Dataset -  Normalization")
-
-
-# Código:
-
-scaler_std = StandardScaler()
-X_train_no_outliers_smote_standardized = scaler_std.fit_transform(X_train_smote)
-X_test_no_outliers_smote_standardized = scaler_std.transform(X_test_smote)
-
-knn.fit(X_train_no_outliers_smote_standardized, y_train_smote)
-y_pred_no_outliers_smote_std = knn.predict(X_test_no_outliers_smote_standardized)
-
-print("Oversampled No Outliers Dataset - Standardization")
-print(f"Accuracy: {accuracy_score(y_test_smote, y_pred_no_outliers_smote_std)}")
-print(f"Precision: {precision_score(y_test_smote, y_pred_no_outliers_smote_std)}")
-print(f"Recall: {recall_score(y_test_smote, y_pred_no_outliers_smote_std)}")
-plot_confusion_matrix(confusion_matrix(y_test, y_pred_original), "Oversampled No Outliers Dataset -  Standardization")
-
-
-# Texto:
-#### Análisis más profundo
-Una vez aplicado el las pruebas individuales según el dataset, se puede ver concluir que el mejor resultado es `Oversample No Outliers - Normalization`, sin emabrgo el modelo de entrenamiento tiene un hiperparámetros que se debería probar en este caso el valor de `k`. Por tanto una vez hecha las pruebas para mútilples K, también se hará la pruebas cambiando el `random_seed` y con esto obtener los 5 mejores resultados según la distribución de pesos `weight_score`
-
-# Código:
-from sklearn.model_selection import train_test_split
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.preprocessing import MinMaxScaler, StandardScaler
-from sklearn.metrics import accuracy_score, precision_score, recall_score, auc, roc_curve
-
-
-
-# Scalers initialization
-scaler_norm = MinMaxScaler()
-scaler_std = StandardScaler()
-
-# K values to test
-k_values = [3, 5, 9]
-
-# Tests to perform
-tests = [
-    ('Original Dataset', X, y),
-    ('Orig Dataset no Preg', X_no_preg, y),
-    ('Dataset No Outliers', X_no_outliers, y_no_outliers),
-    ('Dataset No Outliers no Preg', X_no_outliers_no_preg, y_no_outliers),
-    ('Oversampled Dataset', X_smote, y_smote)
-]
-
-# Dictionary to store the best tests based on weighted score and include metrics for confusion matrix and AUC
-best_tests = {}
-
-random_state_result_knn = [20,73,42,80]  
-
-for random_knn in random_state_result_knn:
-    for k in k_values:
-        for test_name, x_dataset, y_dataset in tests:
-            # Splitting the dataset
-            X_train, X_test, y_train, y_test = train_test_split(x_dataset, y_dataset, test_size=0.2, random_state=random_knn)
-            knn = KNeighborsClassifier(n_neighbors=k)
-
-            # Loop through different data preprocessing techniques
-            for scale_method, (X_train_scaled, X_test_scaled) in [('Without Scaling', (X_train, X_test)), 
-                                                                ('Normalization', (scaler_norm.fit_transform(X_train), scaler_norm.transform(X_test))), 
-                                                                ('Standardization', (scaler_std.fit_transform(X_train), scaler_std.transform(X_test)))]:
-                knn.fit(X_train_scaled, y_train)
-                y_pred = knn.predict(X_test_scaled)
-                acc = accuracy_score(y_test, y_pred)
-                prec = precision_score(y_test, y_pred)
-                rec = recall_score(y_test, y_pred)
-                cm = confusion_matrix(y_test, y_pred)
-                fpr, tpr, _ = roc_curve(y_test, knn.predict_proba(X_test_scaled)[:, 1])
-                roc_auc = auc(fpr, tpr)
-
-                # Storing results
-                test_key = f"{test_name:27} - random={random_knn}  -  K={k} - {scale_method:16}"
-                best_tests[test_key] = {
-                    'weighted_score': weighted_score(acc, rec, prec),
-                    'confusion_matrix': cm,
-                    'fpr': fpr, 
-                    'tpr': tpr,
-                    'roc_auc': roc_auc
-                }
-                print(f"{test_key}: Accuracy={acc:.2f}, Precision={prec:.2f}, Recall={rec:.2f} Weighted Score={best_tests[test_key]['weighted_score']:.2f}, AUC={roc_auc:.2f}")
-
-# Identify the three best tests based on the weighted score
-top_5_tests = sorted(best_tests, key=lambda x: best_tests[x]['weighted_score'], reverse=True)[:5]
-print("\nTop 5 tests based on weighted score:")
-for test in top_5_tests:
-    print(f"{test}: Weighted Score={best_tests[test]['weighted_score']:.2f}, AUC={best_tests[test]['roc_auc']:.2f}")
-
-    # Plotting confusion matrix and ROC curve for the top 3 tests
-    plot_confusion_matrix(best_tests[test]['confusion_matrix'], f"Confusion Matrix for {test}")
-    plot_roc_curve(best_tests[test]['fpr'], best_tests[test]['tpr'], best_tests[test]['roc_auc'], f"ROC Curve for {test}")
+Observando los cambios anteriores se puede evidenciar que: 
+- <div style="display: inline-block; width: 12px; height: 12px; background-color: #046266; border: 1px solid black;"></div> dataset original, presenta mayor dispersión de datos en comparación al <div style="display: inline-block; width: 12px; height: 12px; background-color: #CC5184; border: 1px solid black;"></div> nuevo dataset (sin outliers), por lo que esto nos proporciana diferentes datas para realizar pruebas.
 
 
 # Texto:
 ## Heart Failure Prediction Dataset
-Se procederá a realizar las mismas pruebas aplicadas al dataset de Pima Indians Diabetes, adaptándolas al dataset de Heart Failure Prediction.
+Seguidamente, se procede con la exploración y el preprocesamiento de datos para el conjunto de datos *Heart Failure Prediction Dataset*. Dicho *dataset* fue elegido por el equipo de trabajo cómo el segundo conjunto de datos a analizar. Al inicio del notebook se explicó el motivo de su elección, en el informe se ampliará más en detalle dicho motivo.
 
-
-# Texto:
-#### **Cargar dataset** 
+### Analisis Exploratorio de Datos
+Primero, se importan las librerías necesarias para el análisis exploratorio de datos.
 
 # Código:
 # Load dataset
 df_heart = pd.read_csv('heart.csv')
 
-# Texto:
-#### **Eliminar filas duplicadas**
+# Display 20 rows
+print(df_heart.head(20))
 
 # Código:
-# Check for duplicate rows and remove them
-print(df_heart.duplicated().sum())
+# Get basic statistics 
+print(df_heart.describe())
+
+# Código:
+# Number of missing values in each column
+print(df_heart.isnull().sum())
+
+# Código:
+df_heart.count()
 
 # Texto:
-#### **Label Enconding**
+Con esta información, se obtiene que el *dataset* posee 12 columnas de las cuales *FastingsBS*, *Oldpeak* y obviamente *HeartDisease* tienen la posibilidad de tener un 0 sin que sea un problema para el análisis. Adicionalmente, se evidencia que el dataset tiene una cantidad de 918 datos y que no hay datos nulos o faltantes.
+
+Ahora, se procede a revisar si hay filas duplicadas para eliminarlas. Del mismo modo, tras el análisis anterior se pudo notar que la mayoría de las columnas posee un valor no numérico por lo que se procede a codificar cada una con el fin de obtener columnas con datos totalmente numéricos.
+
+
+
+# Texto:
+#### **Label Encoding**
+El *label encoding* se aplica a variables categóricas para convertirlas en formatos numéricos, permitiendo su procesamiento por algoritmos de machine learning. Cada categoría única se asigna a un entero distinto, lo que facilita el manejo de variables sin un orden inherente.
+
+Este método se ha implementado en ciertas columnas categóricas de nuestro conjunto de datos, exceptuando aquellas binarias o con una relación ordinal importante. A continuación, se detalla la codificación aplicada a cada columna:
+
+| Columna          | Descripción                                                                                   | Codificación                      |
+|------------------|-----------------------------------------------------------------------------------------------|-----------------------------------|
+| `Sex`            | Género del individuo.                                                                         | 1 = M, 0 = F                      |
+| `ExerciseAngina` | Presencia de angina inducida por ejercicio.                                                   | 1 = Y (Sí), 0 = N (No)            |
+| `ChestPainType`  | Tipo de dolor torácico experimentado.                                                         | ATA = 1, NAP = 2, ASY = 0, TA = 3 |
+| `RestingECG`     | Resultados del electrocardiograma en reposo.                                                  | Normal = 1, ST = 2, LVH = 0       |
+| `ST_Slope`       | La pendiente del segmento ST del ejercicio pico en la prueba de esfuerzo.                     | Flat = 1, Up = 2, Down = 0        |
+
+Las columnas `ChestPainType`, `RestingECG` y `ST_Slope` fueron consideradas inicialmente para one-hot encoding para evitar suponer una ordenación numérica entre las categorías. No obstante, tras revisión, se optó por el *label encoding* también en estas.
+
 
 # Código:
 # Label codification 
@@ -540,143 +346,200 @@ df_heart['RestingECG'] = le.fit_transform(df_heart['RestingECG'])
 df_heart['ST_Slope'] = le.fit_transform(df_heart['ST_Slope'])
 
 # Texto:
-#### **Imputación de datos**
+La implementación del *label encoding* ha simplificado el conjunto de datos, transformando las variables categóricas en numéricas y facilitando su procesamiento por algoritmos de machine learning. Aunque esta técnica agiliza el análisis, es crucial considerar su adecuación para cada variable, evitando introducir relaciones ordinales donde no existen.
+
+
+# Código:
+print(df_heart.head(20))
+
+# Código:
+print(df_heart.tail(20))
+
+# Código:
+print(df_heart.corr())
+
+# Texto:
+#### **Eliminar filas duplicadas**
+
+
+Ahora, se procede a revisar si hay filas duplicadas para eliminarlas. Del mismo modo, tras el análisis anterior se pudo notar que algunas columnas (además de las permitidas) poseen valores en 0 por lo que es de suma importancia corregirlo para el análisis del dataset con los modelos más adelante. 
+
+
+# Código:
+# Check for duplicate rows and remove them
+print(df_heart.duplicated().sum())
+df_heart = df_heart.drop_duplicates()
+
+# Texto:
+Debido a que no habían filas duplicadas, no se eliminó nada. Tras el cambio del dataset realizado con el método de *label encoding*, se puede proceder a analizar mediante el uso de diversos diagramas para ver el comportamiento del dataset de manera visual.
+
+
+# Texto:
+#### **Aplicación de Imputación de Datos al Atributo `Cholesterol`**
+
+En la fase anterior de nuestro análisis, identificamos y tratamos valores atípicos en nuestro conjunto de datos, incluyendo aquellos casos donde el `Cholesterol` registraba un valor de 0. Reconociendo que estos valores no son plausibles desde una perspectiva biológica, se procedió con la estrategia de imputación de datos que ya hemos discutido.
+
+Para el atributo `Cholesterol`, se aplicó la imputación por la media, reemplazando los valores nulos o cero con el promedio calculado a partir de los datos válidos. Esta acción asegura la coherencia y mejora la calidad de nuestro conjunto de datos, permitiéndonos avanzar en el análisis con una representación más precisa de las condiciones de salud de los individuos.
+
+Con la imputación completada, es esencial revisar los cambios mediante visualizaciones o estadísticas descriptivas para confirmar que los valores imputados se alinean adecuadamente con la distribución general de `Cholesterol` en la población estudiada.
+
 
 # Código:
 df_heart['Cholesterol'] = df_heart['Cholesterol'].replace(0, np.nan)
 df_heart.fillna(df_heart.mean(), inplace=True)
 
 # Texto:
+#### **Visualización de los datos**
+Ahora, se procede con un análisis un poco más profundo. Se desea observar el porcentaje y la cantidad de mujeres diabéticas en comparación con las mujeres que no lo padecen. Dónde se provará diferentes casos para el dataset:
+1. Histograma de Edades
+2. Balanceo
+3. Gráficos de Barra
+4. Gráficos de dispersion 
+
+# Texto:
+- **Histograma de Edad:** El siguiente histograma permitirá ver el rango de edades y sexo que se encuentran dentro del conjunto de datos, esto con el fin de obtener una idea general de los datos obtenidos.
+
+# Código:
+# Histogram of the Age column
+plt.hist(df_heart['Age'], bins=10, color='#3CB371', edgecolor='black')
+plt.title('Histogram of Age')
+plt.xlabel('Age')
+plt.ylabel('Frequency')
+plt.show()
+
+# Histogram of the Sex column
+male_count = np.sum(df_heart['Sex'] == 1)
+female_count = np.sum(df_heart['Sex'] == 0)
+plt.bar(['F', 'M'], [female_count, male_count], color=['#FFC0CB', '#40E0D0'], edgecolor='black')  
+plt.title('Histogram of Sex')
+plt.xlabel('Sex')
+plt.ylabel('Frequency')
+plt.show()
+
+# Texto:
+Con los datos obtenidos, se evidencia que la mayoría de las personas se encuentran en un rango de edad entre 50 y 60 años, además que la mayoría son hombres.
+
+Ahora, se procede con un análisis un poco más profundo. Se desea observar el porcentaje y la cantidad de personas que sí tienen una enfermedad cardiovascular en comparación con las personas que no lo tienen.
+
+# Texto:
+- **Gráficos para mostrar el Balanceo de Datos**
+
+# Código:
+# Distribution of the HeartDisease column for people with a heart disease and people without a heart disease
+palette_colors = {0: "#40E0D0", 1: "#006064"}  
+sns.countplot(x='HeartDisease', data=df_heart, hue="HeartDisease", palette=palette_colors)
+plt.title('Distribution of HeartDisease')
+plt.xlabel('HeartDisease')
+plt.ylabel('Frequency')
+plt.xticks([0, 1], ['Non-HeartDisease', 'HeartDisease'])
+plt.show()
+
+
+# Pie chart to visualize the proportion of diabetic and non-diabetic individuals
+labels = ['Non-HeartDisease', 'HeartDisease']
+sizes = df_heart['HeartDisease'].value_counts()
+colors = ['#40E0D0', '#006064']
+plt.pie(sizes, labels=labels, colors=colors, autopct='%1.1f%%', startangle=90)
+plt.title('Proportion of HeartDisease and Non-HeartDisease Individuals')
+plt.axis('equal')
+plt.show()
+
+# Texto:
+Con base en los resultados obtenidos, se puede ver que existe una mayor cantidad de persona que sí padecen de una enfermadad cardiovascular en el conjunto de datos con un 55.3% de los 918 datos existentes. Además, es importante destacar que este dataset sí se encuentra balanceado, no como el anterior.
+
+# Texto:
+- **Gráficos de barra**
+Ahora, para obtener una idea de como están relacionados los *features* con el hecho de que una persona tenga una enfermadad cardiovascular o no, se pretende comparar cada columna con la columna de *HeartDisease*. Para agilizar este proceso, se utilizará la misma función `plot_stacked_histogram` usada en el primer *dataset*, el arreglo de *features* con la cual se pretende comparar y la columna con la que se comparará.
+
+# Código:
+# Call the function to plot the stacked histograms
+plot_stacked_grid_histogram(df_heart, ['Age', 'Sex', 'RestingBP', 'Cholesterol', 'FastingBS', 'MaxHR', 'ExerciseAngina', 'Oldpeak',
+                                  'ChestPainType', 'RestingECG','ST_Slope'], 'HeartDisease')
+
+# Texto:
+Con base en los histogramas obtenidos, es fácil de observar que en su mayoría para cualquier feature donde están los valores altos es donde hay más concentración de personas con enfermedades cardiovasculares. Es importante ver que no es tan significativo en algunos casos como lo es con el *MaxHR*, *Cholesterol* e inclusive la edad. Del mismo modo, se puede ver que para las personas con enfermedades cardiovasculares, el *ChestPainType* es significativo para personas con *NAP*, el *RestingECG* es significativo para personas con *normal* y el *St_Slope* es signficativo para personas con *Flat*. 
+
+# Texto:
+- **Gráficos de dispersión**
+
+# Texto:
+Ahora, para observar que tan relacionada está la edad con estos datos vistos anteriormente, se pretende evaluar de manera similar cada columna significativa en comparación de la edad para ver que tanto puede influir en tener una enfermedad cardiovacular o no. Para este caso se recurrió al uso de diagramas de dispersión. Se seguió la misma técnica para agilizar el proceso igual al usado con el dataset anterior donde se llama con el nombre del *dataset* y el arreglo de *features* a evaluar, los *features* por comparar y los *labels* que se utilizarán.
+
+Para las columnas no signifcativas, se realizó un *pie chart* que permitiera visualizar los datos de estos a pesar de que sus diagramas de dispersión no fuesen enriquecedor para el análisis.
+
+# Código:
+# Call the function to plot the scatter plots
+labelsHeart = ['Non-HeartDisease', 'HeartDisease']
+scatter_plots_grid_by_feature_and_split(df_heart, ['RestingBP', 'Cholesterol', 'MaxHR', 'Oldpeak'], 'HeartDisease', 'Age', labelsHeart)
+
+# Código:
+columns_to_plot = ['Sex', 'FastingBS', 'ExerciseAngina', 'ChestPainType', 'RestingECG', 'ST_Slope']
+colors = ['#40E0D0', '#006064', '#20B2AA', '#008B8B'] 
+fig, axes = plt.subplots(nrows=2, ncols=3, figsize=(15, 10))
+
+
+axes = axes.flatten()
+for i, column in enumerate(columns_to_plot):
+    value_counts = df_heart[column].value_counts()
+    axes[i].pie(value_counts, labels=value_counts.index, autopct='%1.1f%%', startangle=90, colors=colors[:len(value_counts)])
+    axes[i].set_title(column)
+plt.tight_layout()
+plt.show()
+
+# Texto:
+Con los resultados obtenidos, se muestra que las personas con enfermedades cardiovasculares tienden a estar dispersos entre todo el diagrama, esto puede indicar que la edad realmente no es un factor influyente para clasificar si una persona puede padecer o no de una enfermedad cardiovascular. En las columnas *ChestPainType*, *RestingECG* y *St_Slope*, es un poco más fácil de evidenciar que en su mayoría corresponden a persona que sí padecen de estas enfermadades y que estas es su mayoría se concentran en los mismo valores encontrados en los gráficos anteriores.
+
+Con esto se concluye con el análisis del segundo dataset y con esto se puede proceder a la implementación de los modelos KNN, Regresión Lineal y Redes Neuronales para finalmente poder realizar las comparaciones solicitadas.
+
+# Texto:
 #### **Remover outliers**
 
+Nuevamente se sabe que remover los outlier permite simplificar el dataset y tener una mejor, compresión de este además de tener mayor versatilidad para hacer las pruebas por lo que siempre será una buena ventaja tener un dataset sin outliers.
+
 # Código:
-# Calculate Z-scores for each numerical feature in the DataFrame
+
+# Calculate Z-scores for df_heart's numerical features
 z_scores = np.abs(stats.zscore(df_heart.select_dtypes(include=[np.number])))
 
-# Set a threshold for identifying outliers, typically 3
+# Set outlier threshold
 threshold = 3
-# Create a boolean DataFrame where Z-scores exceed the threshold
-outliers = (z_scores > threshold)
-df_heart_no_outliers = df_heart[~(outliers).any(axis=1)]
 
-print(f"Original DataFrame size: {df_heart.shape}")
-print(f"DataFrame size without outliers: {df_heart_no_outliers.shape}")
+# Remove outliers based on threshold
+df_no_outliers = df_heart[~(z_scores > threshold).any(axis=1)]
 
-# Texto:
-### **Heart Failure Prediction Dataset**
-En esta sección, se llevará a cabo el preprocesamiento de datos y la implementación de modelos de entrenamiento para el dataset de Heart Failure Prediction. Se aplicarán las mismas pruebas realizadas previamente en el dataset de Pima Indians Diabetes, adaptándolas a las particularidades de este nuevo conjunto de datos.
+print(f"Tamaño del DataFrame original: {df_heart.shape}")
+print(f"Tamaño del DataFrame sin outliers: {df_no_outliers.shape}")
 
-Cabe destacar que cada prueba dividirá los datos en un conjunto de entrenamiento (80%) y un conjunto de prueba (20%). Las pruebas consistirán en diferentes combinaciones de datos, organizadas de la siguiente manera:
+# Visualization setup
+fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(20, 8), sharey=True)
+titles = ['Conjunto de Datos Original', 'Conjunto de Datos sin Outliers']
+dataframes = [df_heart, df_no_outliers]
+colors_original = ['#40E0D0', '#006064']  
+colors_no_outliers = ['red', 'darkred'] 
 
-#### 1. **Dataset Original** 
-- Conjunto de datos tal como se encuentra, sin modificaciones adicionales.
-- Normalización.
-- Estandarización.
+for ax, df, title, color_set in zip(axes, dataframes, titles, [colors_original, colors_no_outliers]):
+    # Adjust plot details according to your dataset and analysis
+    ax.scatter(df['Cholesterol'], df['Age'], alpha=0.6, color=color_set[0])
+    ax.scatter(df['Cholesterol'], df['Age'], alpha=0.6, color=color_set[1])
+    ax.set_title(title)
+    ax.set_xlabel('Cholesterol')
+    ax.set_ylabel('Age')
+    ax.legend(labelsHeart)
 
-#### 2. **Dataset Original sin la columna 'Cholesterol'** `sin [Cholesterol]`
-- Conjunto de datos sin la columna 'Cholesterol'.
-- Normalización.
-- Estandarización.
-
-#### 3. **Dataset sin outliers** `Sin Outliers`
-- Datos sin valores atípicos.
-- Normalización.
-- Estandarización.
-
-#### 4. **Dataset sin outliers y sin la columna 'Cholesterol'** `Sin outliers y sin [Cholesterol]`
-- Datos sin valores atípicos y sin la columna 'Cholesterol'.
-- Normalización.
-- Estandarización.
-
-#### 5. **Sobremuestreo** `Oversampling, sin outliers, sin [Cholesterol]`
-- Técnica de sobremuestreo aplicada a los datos sin valores atípicos y sin la columna 'Cholesterol'.
-- Normalización.
-- Estandarización.
-
+plt.tight_layout()
+plt.show()
 
 
 # Texto:
-### **Automatización de pruebas en el Heart Failure Prediction Dataset**
-
-Debido a la complejidad y la extensión del análisis, se ha decidido omitir las pruebas individuales preliminares para el dataset de Heart Failure Prediction. En su lugar, se procederá por un enfoque de fuerza bruta que nos permitirá evaluar sistemáticamente múltiples configuraciones y transformaciones de datos de manera automatizada. Este método proporcionará una visión más amplia y objetiva de qué configuraciones producen los mejores resultados con el modelo KNN.
-
-Sin emabrgo el script de fuerza bruta evaluará las mismas pruebas anteriormentes mencionasdas:
-
-1. **Dataset Original**: Uso del dataset tal como está, sin modificaciones adicionales.
-2. **Dataset sin 'Cholesterol'**: Exclusión de la variable 'Cholesterol', que podría no ser relevante para todos los modelos.
-3. **Dataset sin Outliers**: Eliminación de outliers para mejorar la generalización del modelo.
-4. **Dataset sin Outliers y sin 'Cholesterol'**: Combinación de la exclusión de outliers y la variable 'Cholesterol'.
-5. **Oversampling**: Aplicación de técnicas de sobremuestreo para abordar el desequilibrio de clases.
-
-Esta metodología permite cubrir un espectro amplio de escenarios, identificando las configuraciones que mejor se adaptan a las peculiaridades del dataset de Heart Failure Prediction y al modelo KNN.
+Observando los cambios anteriores se puede evidenciar que: 
+- <div style="display: inline-block; width: 12px; height: 12px; background-color: #046266; border: 1px solid black;"></div> dataset original, presenta mayor dispersión de datos en comparación al <div style="display: inline-block; width: 12px; height: 12px; background-color: #CC5184; border: 1px solid black;"></div> nuevo dataset (sin outliers), por lo que esto nos proporciana diferentes datas para realizar pruebas.
 
 
-# Código:
-from sklearn.model_selection import train_test_split
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.preprocessing import MinMaxScaler, StandardScaler
-from sklearn.metrics import accuracy_score, precision_score, recall_score, auc, roc_curve
+# Texto:
 
-# Initialization of scalers
-scaler_norm_heart = MinMaxScaler()
-scaler_std_heart = StandardScaler()
-
-# K values to test
-k_values_heart = [3, 5, 9]
-
-# Tests to perform with the Heart Failure Prediction dataset
-tests_heart = [
-    ('Heart Original Dataset', X_heart, y_heart),
-    ('Heart Orig Dataset no Cholesterol', X_heart_no_chol, y_heart),
-    ('Heart Dataset No Outliers', X_heart_no_outliers, y_heart_no_outliers),
-    ('Heart Dataset No Outliers no Chol', X_heart_no_outliers_no_chol, y_heart_no_outliers),
-    ('Heart Oversampled Dataset', X_heart_smote, y_heart_smote)
-]
-
-# Dictionary to store the best tests based on weighted score and include metrics for confusion matrix and AUC
-best_tests_heart = {}
-
-random_state_result_heart = [20, 73, 42, 80]
-
-for random_heart in random_state_result_heart:
-    for k in k_values_heart:
-        for test_name, x_dataset, y_dataset in tests_heart:
-            # Splitting the dataset
-            X_train_heart, X_test_heart, y_train_heart, y_test_heart = train_test_split(x_dataset, y_dataset, test_size=0.2, random_state=random_heart)
-            knn_heart = KNeighborsClassifier(n_neighbors=k)
-
-            # Loop through different data preprocessing techniques
-            for scale_method, (X_train_scaled, X_test_scaled) in [('Without Scaling', (X_train_heart, X_test_heart)), 
-                                                                  ('Normalization', (scaler_norm_heart.fit_transform(X_train_heart), scaler_norm_heart.transform(X_test_heart))), 
-                                                                  ('Standardization', (scaler_std_heart.fit_transform(X_train_heart), scaler_std_heart.transform(X_test_heart)))]:
-                knn_heart.fit(X_train_scaled, y_train_heart)
-                y_pred_heart = knn_heart.predict(X_test_scaled)
-                acc_heart = accuracy_score(y_test_heart, y_pred_heart)
-                prec_heart = precision_score(y_test_heart, y_pred_heart)
-                rec_heart = recall_score(y_test_heart, y_pred_heart)
-                cm_heart = confusion_matrix(y_test_heart, y_pred_heart)
-                fpr_heart, tpr_heart, _ = roc_curve(y_test_heart, knn_heart.predict_proba(X_test_scaled)[:, 1])
-                roc_auc_heart = auc(fpr_heart, tpr_heart)
-
-                # Storing results
-                test_key_heart = f"{test_name:30} - Random={random_heart} - K={k} - {scale_method:15}"
-                best_tests_heart[test_key_heart] = {
-                    'weighted_score': weighted_score(acc_heart, rec_heart, prec_heart),
-                    'confusion_matrix': cm_heart,
-                    'fpr': fpr_heart, 
-                    'tpr': tpr_heart,
-                    'roc_auc': roc_auc_heart
-                }
-                print(f"{test_key_heart}: Accuracy={acc_heart:.2f}, Precision={prec_heart:.2f}, Recall={rec_heart:.2f}, Weighted Score={best_tests_heart[test_key_heart]['weighted_score']:.2f}, AUC={roc_auc_heart:.2f}")
-
-# Identify the top 5 tests based on the weighted score
-top_5_tests_heart = sorted(best_tests_heart, key=lambda x: best_tests_heart[x]['weighted_score'], reverse=True)[:5]
-print("\nTop 5 tests based on weighted score:")
-for test in top_5_tests_heart:
-    print(f"{test}: Weighted Score={best_tests_heart[test]['weighted_score']:.2f}, AUC={best_tests_heart[test]['roc_auc']:.2f}")
-
-    # Plotting confusion matrix and ROC curve for the top 5 tests
-    plot_confusion_matrix(best_tests_heart[test]['confusion_matrix'], f"Confusion Matrix for {test}")
-    plot_roc_curve(best_tests_heart[test]['fpr'], best_tests_heart[test]['tpr'], best_tests_heart[test]['roc_auc'], f"ROC Curve for {test}")
-
+## Hipótesis
+Una vez concluidos los análisis de ambos *datasets*, se procede a buscar una hipótesis para cada uno. Del mismo modo, el equipo decidio comprobar una tercera hipótesis sobre la comparación de los resultados obtenidos con cada modelo para los dos conjuntos de datos.
+- **Hipótesis 1:** La edad es un factor determinante a la hora de clasificar si una mujer es diabética o no, sin importar los demás *features* evaluados.
+- **Hipótesis 2:** Los tres algoritmos tendrán dificultades para clasificar correctamente a los pacientes cuando solamente se consideren las características relacionadas al *dataset Heart Failure Prediction Dataset*, como los resultados del *ST_Slope* y los resultados del *Resting_ECG*.
+- **Hipótesis 3:** El modelo de las redes neuronales tendrá las mejores métricas de los tres algoritmos aplicado en cualquiera de los dos *datasets*.
 
