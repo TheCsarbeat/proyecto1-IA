@@ -30,4 +30,4 @@ def ipynb_to_txt(ipynb_path, txt_path):
         
     
 # Usar la función con la ruta de tu archivo .ipynb y el destino del .txt
-ipynb_to_txt('p1.ipynb', 'asdf.txt')
+ipynb_to_txt('KNN.ipynb', 'KNN.txt')
